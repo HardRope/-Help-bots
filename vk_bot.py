@@ -16,21 +16,22 @@ def detect_intent_texts(project_id, session_id, text, language_code='ru'):
     response = session_client.detect_intent(
             request={"session": session, "query_input": query_input}
     )
-
-    return response.query_result.fulfillment_text
-
+    result = response.query_result.intent.is_fallback
+    text = response.query_result.fulfillment_text
+    return result, text
 
 def echo(event, vk_api):
     text = event.text
     user_id = event.user_id
 
-    answer = detect_intent_texts(project_id, user_id, text)
+    check, answer = detect_intent_texts(project_id, user_id, text)
 
-    vk_api.messages.send(
-        user_id=user_id,
-        message=answer,
-        random_id=random.randint(1,1000)
-    )
+    if not check:
+        vk_api.messages.send(
+            user_id=user_id,
+            message=answer,
+            random_id=random.randint(1,1000)
+        )
 
 
 if __name__ == '__main__':
