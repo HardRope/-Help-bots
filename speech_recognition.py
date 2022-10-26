@@ -5,21 +5,21 @@ from google.cloud import dialogflow
 from telegram.ext import (
     Filters,
     Updater,
-    # CallbackQueryHandler,
     CommandHandler,
     MessageHandler,
-    # PreCheckoutQueryHandler,
 )
+
+env = Env()
+env.read_env()
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-
 logger = logging.getLogger(__name__)
 
 
-def detect_intent_texts(project_id, session_id, text, language_code='ru'):
+def detect_intent_texts(session_id, text, project_id=env.str('DIALOGFLOW_ID'), language_code='ru'):
     session_client = dialogflow.SessionsClient()
     session = session_client.session_path(project_id, session_id)
 
@@ -40,8 +40,11 @@ def start(update, context):
     )
 
 
-def echo(update, context):
-    message = detect_intent_texts(project_id, update.message.chat_id, update.message.text)
+def answer(update, context):
+    message = detect_intent_texts(
+        session_id=update.message.chat_id,
+        text=update.message.text
+    )
 
     context.bot.send_message(
         chat_id=update.message.chat_id,
@@ -50,17 +53,13 @@ def echo(update, context):
 
 
 if __name__ == '__main__':
-    env = Env()
-    env.read_env()
-
-    project_id = env.str('DIALOGFLOW_ID')
     tg_token = env.str('TELEGRAM_TOKEN')
 
     updater = Updater(token=tg_token, use_context=True)
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler('start', start))
-    dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
+    dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), answer))
 
     updater.start_polling()
     updater.idle()
