@@ -1,8 +1,20 @@
+import argparse
 import logging
 
 import requests
 from environs import Env
 from google.cloud import dialogflow
+
+env = Env()
+env.read_env()
+
+logger = logging.getLogger('bot_training')
+
+
+def create_parser():
+    parser = argparse.ArgumentParser(description='Add data from url with json to DialogFlow')
+    parser.add_argument('url', help='URL with JSON, contains data for create Intents')
+    return parser
 
 
 def create_intent(project_id, display_name, training_phrases_parts, message_text):
@@ -27,20 +39,21 @@ def create_intent(project_id, display_name, training_phrases_parts, message_text
         request={'parent': parent, 'intent': intent, 'language_code': 'ru'}
     )
 
-    logging.info('Intent created: {}'.format(response))
+    logger.info('Intent created: {}'.format(response))
 
 
 if __name__ == '__main__':
-    env = Env()
-    env.read_env()
+    logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level=logging.INFO
+    )
+    parser = create_parser()
+    namespace = parser.parse_args()
 
     project_id = env.str('DIALOGFLOW_ID')
 
-    url = 'https://dvmn.org/media/filer_public/a7/db/a7db66c0-1259-4dac-9726-2d1fa9c44f20/questions.json'
-
     try:
-
-        response = requests.get(url)
+        response = requests.get(namespace.url)
         response.raise_for_status()
 
         serialized_phrases = response.json()
@@ -50,5 +63,8 @@ if __name__ == '__main__':
             answers = [phrases['answer']]
             create_intent(project_id, name, training_phrases_parts, answers)
     except requests.HTTPError:
-        logging.info('Ошибка загрузки. Проверьте ссылку')
-
+        logger.info('Ошибка загрузки. Проверьте ссылку')
+    except requests.exceptions.MissingSchema:
+        logger.info('Неверный адрес. Требуется ссылка (http://url...')
+    except Exception:
+        logger.warning('Непредвиденная ошибка!', exc_info=sys.exc_info())
