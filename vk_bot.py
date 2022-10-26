@@ -62,6 +62,7 @@ if __name__ == '__main__':
 
     vk_token = env.str('VK_TOKEN')
     vk_session = vk_api.VkApi(token=vk_token)
+    logger.warning('Бот запущен')
     while True:
         try:
 

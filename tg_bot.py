@@ -83,5 +83,6 @@ if __name__ == '__main__':
     dispatcher.add_handler(CommandHandler('start', start))
     dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), answer))
 
+    logger.warning('Бот запущен')
     updater.start_polling()
     updater.idle()
