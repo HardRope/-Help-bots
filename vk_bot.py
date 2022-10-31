@@ -9,7 +9,7 @@ import telegram
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 
-from _supporting_functions import detect_intent_texts, TelegramLogsHandler
+from _general_bots_functions import detect_intent_texts, TelegramLogsHandler
 
 logger = logging.getLogger('vk_bot')
 

@@ -10,7 +10,7 @@ from telegram.ext import (
     MessageHandler,
 )
 
-from _supporting_functions import detect_intent_texts, TelegramLogsHandler
+from _general_bots_functions import detect_intent_texts, TelegramLogsHandler
 
 logger = logging.getLogger('tg_bot')
 
